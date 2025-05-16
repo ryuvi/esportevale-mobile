@@ -1,44 +1,57 @@
-import React, { useState } from 'react';
+// pages/private/ContentEditor.js
+
+import React, { useState } from "react";
 import {
   Platform,
   KeyboardAvoidingView,
   StyleSheet,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  RichText,
-  Toolbar,
-  useEditorBridge,
-} from '@10play/tentap-editor';
-import {
-  TextInput,
-  Button,
-  Surface,
-  useTheme,
-} from 'react-native-paper';
-import { createContent } from '../api/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { RichText, Toolbar, useEditorBridge } from "@10play/tentap-editor";
+import { TextInput, Button, Surface, useTheme } from "react-native-paper";
+import { createContent } from "../../api/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+import { isLogged } from "../../api/auth";
 
 export default function ContentEditor({ route, navigation }) {
   const theme = useTheme();
   const content = route?.params?.content || null;
 
-  const [title, setTitle] = useState(content?.title ?? '');
-  const [tags, setTags] = useState(content?.tags ?? '');
-  const [editorContent, setEditorContent] = useState(content?.body ?? '');
+  const [title, setTitle] = useState(content?.title ?? "");
+  const [tags, setTags] = useState(content?.tags ?? "");
+  const [editorContent, setEditorContent] = useState(content?.body ?? "");
 
   const editor = useEditorBridge();
 
   const saveContent = async () => {
     const content = editor.getHTML();
     const newContent = { title, tags, body: content };
-    const token = await AsyncStorage.getItem('userToken');
+    const token = await AsyncStorage.getItem("userToken");
 
     await createContent(title, tags, content, token);
 
     navigation.goBack();
   };
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const result = await isLogged();
+        if (!result?.success) {
+          await AsyncStorage.removeItem("userToken");
+          navigation.replace("Login");
+        }
+      } catch (error) {
+        console.error("Erro ao verificar login:", error);
+        await AsyncStorage.removeItem("userToken");
+        navigation.replace("Login");
+      }
+    };
+
+    checkLogin();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -63,19 +76,15 @@ export default function ContentEditor({ route, navigation }) {
         </Surface>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.kbView}
         >
           <Toolbar editor={editor} />
         </KeyboardAvoidingView>
 
         <Surface style={styles.buttons}>
-          <Button
-            mode="contained"
-            onPress={saveContent}
-            style={styles.button}
-          >
-            {content ? 'Atualizar Conteúdo' : 'Criar Conteúdo'}
+          <Button mode="contained" onPress={saveContent} style={styles.button}>
+            {content ? "Atualizar Conteúdo" : "Criar Conteúdo"}
           </Button>
           <Button
             mode="outlined"
@@ -109,14 +118,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   kbView: {
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     bottom: 0,
   },
   buttons: {
     marginTop: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     padding: 8,
     elevation: 2,
     borderRadius: 10,

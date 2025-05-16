@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Image, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login } from '../api/api'; // sua função de login
-import Logo from '../assets/esportevale-removebg-preview.png';
+import { login } from '../../api/auth'; // sua função de login
+import Logo from '../../assets/esportevale-removebg-preview.png';
 
 import {
   TextInput,
