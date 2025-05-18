@@ -303,4 +303,4 @@ links.forEach(link => {
     if (link.href.includes('futebolinterior')) {
         link.parentNode.removeChild(link);
     }
-});`
+});`;
